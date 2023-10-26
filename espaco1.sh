@@ -10,22 +10,17 @@ function espaco() {
         return 1
     fi
     directories=($(find "$dir" -mindepth 1 -maxdepth 1 -type d))
-    echo directories
-    return 0
     for i in "${directories[@]}"; do
-	echo good
-	if [[ ! "$i" -ef "$dir/.[^.]*" ]] ; then
-		echo good
-		echo $i
+	for j in "$i"/*
+		echo "$i"
 	        if [[ ! -d "$i" ]]; then
 	            space=$(du "$i" | awk '{print $1}' | grep -oE '[0-9.]+')
-	        else
-	            espaco "$i"
 	        fi
 	        total_var=$(echo "$total_var + $space" | bc)
-	fi
+	done
     done
 }
+
 
 #Testes
 total_var=0
