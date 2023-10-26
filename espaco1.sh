@@ -11,8 +11,8 @@ function espaco() {
     fi
     directories=($(find "$dir" -mindepth 1 -maxdepth 1 -type d))
     for i in "${directories[@]}"; do
-	for j in "$i"/*
-		echo "$i"
+	for j in "$i"/*; do
+
 	        if [[ ! -d "$i" ]]; then
 	            space=$(du "$i" | awk '{print $1}' | grep -oE '[0-9.]+')
 	        fi
