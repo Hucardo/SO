@@ -3,7 +3,7 @@
 #valores por predefinição das flags
 flag_d=$(date +%s) #HOJE
 flag_n="*" #TODOS OS FICHEIROS
-flag_s=0 #>0 bytes
+flag_s=0 #>=0 kbs
 flag_r=0 #Ordem decrescente
 flag_a=0 #Sem ordenação por nome
 flag_l=0 #Sem limite de linhas
@@ -16,20 +16,19 @@ while getopts ":d:n:ra:s:l:" opt; do
             flag_d=$(date -d "$OPTARG" +%s) #Data especificada (No formato M d HH:MM)
             ;;
         n)
-            flag_n="$OPTARG"
+            flag_n="$OPTARG" #ficheiros com o padrão especificado
             ;;
         r)
-            flag_a=1
+            flag_r=1 #Ordem crescente
             ;;
         a)
-            flag_r=1
+            flag_a=1 #Com ordenação por nome
             ;;
         s)
-            flag_s="$OPTARG"
-            echo $flag_s
+            flag_s="$OPTARG" #>=flag_s kbs
             ;;
         l)
-            flag_l="$OPTARG"
+            flag_l="$OPTARG" #Com limite de linhas flag_l
             ;;
         \?)
             echo "Invalid option: -$OPTARG"
@@ -44,17 +43,17 @@ echo "SIZE NAME $(date +%Y%m%d) $@"
 function espaco() {
     local dir="$1"
     local space=0
-    if [[ ! -d "$dir" ]]; then
+    if [[ ! -d "$dir" ]]; then #se não for um diretório
         echo "Erro: Diretório inválido"
         return 1
     fi
-    files=($(find "$dir" -type f -name "$flag_n" ! -newermt "@$flag_d"))
-    for j in "${files[@]}"; do
-        if [[ ! -d "$j" ]]; then
-            space=$(du "$j" | awk '{print $1}' | grep -oE '[0-9.]+')
+    files=($(find "$dir" -type f -name "$flag_n" ! -newermt "@$flag_d")) #encontra os ficheiros em $dir com o nome a corresponder a $flag_n alterados não depois de $Flag_d
+    for j in "${files[@]}"; do #itera sobre a lista de ficheiros encontrados
+        if [[ ! -d "$j" ]]; then #podemos remover
+            space=$(du "$j" | awk '{print $1}' | grep -oE '[0-9.]+') #encontra o tamanho do ficheiro usando du
         fi
-        if [[ $space -ge $flag_s ]] ; then
-            total_var=$(echo "$total_var + $space" | bc)
+        if [[ $space -ge $flag_s ]] ; then #verifica se o tamanho do ficheiro encontra os requisitos de tamanho
+            total_var=$(echo "$total_var + $space" | bc) #soma o espaço do ficheiro analisado ao total até agora
         fi
     done
 }
