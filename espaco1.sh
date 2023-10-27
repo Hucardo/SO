@@ -13,8 +13,8 @@ function espaco() {
     for i in "${directories[@]}"; do
 	for j in "$i"/*; do
 
-	        if [[ ! -d "$i" ]]; then
-	            space=$(du "$i" | awk '{print $1}' | grep -oE '[0-9.]+')
+	        if [[ ! -d "$j" ]]; then
+	            space=$(du "$j" | awk '{print $1}' | grep -oE '[0-9.]+')
 	        fi
 	        total_var=$(echo "$total_var + $space" | bc)
 	done
