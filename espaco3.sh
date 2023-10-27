@@ -6,7 +6,7 @@ flag_n="*"
 flag_s=0
 flag_r=0
 flag_a=0
-flag_l=0
+flag_l=9999
 
 
 
@@ -28,7 +28,7 @@ while getopts ":d:n:r:a:s:l:" opt; do
             flag_s="$OPTARG"
             ;;
         l)
-            # Handle option -l if needed
+            flag_l="$OPTARG"
             ;;
         \?)
             echo "Invalid option: -$OPTARG"
@@ -74,10 +74,12 @@ function subespaco(){
 }
 
 function print() {
+    count=1
 	for i in "${!lista[@]}" ; do
-		#colocar limitador aqui segundo a flag -l
-		#eu posso fazer esta
+		if [[ ! $count -gt $flag_l ]] ; then
         	echo "${lista[$i]} $i"
+            count=$(( $count + 1 ))
+        fi
 	done
 }
 
