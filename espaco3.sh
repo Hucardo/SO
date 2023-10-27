@@ -1,19 +1,19 @@
 #!/bin/bash
 
-
-flag_d=$(date +%s)
-flag_n="*"
-flag_s=0
-flag_r=0
-flag_a=0
-flag_l=0
+#valores por predefinição das flags
+flag_d=$(date +%s) #HOJE
+flag_n="*" #TODOS OS FICHEIROS
+flag_s=0 #>0 bytes
+flag_r=0 #Ordem decrescente
+flag_a=0 #Sem ordenação por nome
+flag_l=0 #Sem limite de linhas
 
 
 
 while getopts ":d:n:ra:s:l:" opt; do
     case $opt in
         d)
-            flag_d=$(date -d "$OPTARG" +%s)
+            flag_d=$(date -d "$OPTARG" +%s) #Data especificada (No formato M d HH:MM)
             ;;
         n)
             flag_n="$OPTARG"
@@ -26,6 +26,7 @@ while getopts ":d:n:ra:s:l:" opt; do
             ;;
         s)
             flag_s="$OPTARG"
+            echo $flag_s
             ;;
         l)
             flag_l="$OPTARG"
@@ -47,12 +48,14 @@ function espaco() {
         echo "Erro: Diretório inválido"
         return 1
     fi
-    files=($(find "$dir" -type f -name "$flag_n" -size +"$flag_s"c ! -newermt "@$flag_d"))
+    files=($(find "$dir" -type f -name "$flag_n" ! -newermt "@$flag_d"))
     for j in "${files[@]}"; do
         if [[ ! -d "$j" ]]; then
             space=$(du "$j" | awk '{print $1}' | grep -oE '[0-9.]+')
         fi
-        total_var=$(echo "$total_var + $space" | bc)
+        if [[ $space -ge $flag_s ]] ; then
+            total_var=$(echo "$total_var + $space" | bc)
+        fi
     done
 }
 
