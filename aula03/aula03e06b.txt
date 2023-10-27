@@ -1,0 +1,14 @@
+b) A diferença entre as estruturas until e while é a 
+condição que elas testam:
+
+until: A estrutura until executa um bloco de comandos enquanto
+a condição especificada for falsa. Ou seja, ela executa o bloco
+até que a condição se torne verdadeira.
+
+while: A estrutura while executa um bloco de comandos enquanto
+a condição especificada for verdadeira. Ou seja, ela executa o
+bloco enquanto a condição permanecer verdadeira.
+
+Em resumo, o until executa o bloco até que a condição se torne
+verdadeira, enquanto o while executa o bloco enquanto a condição
+permanecer verdadeira.
