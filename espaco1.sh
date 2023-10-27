@@ -9,7 +9,7 @@ function espaco() {
         echo "Erro: Diretório inválido"
         return 1
     fi
-    directories=($(find "$dir" -mindepth 1 -maxdepth 1 -type d))
+    directories=($(find "$dir" -type d))
     for i in "${directories[@]}"; do
 	for j in "$i"/*; do
 
