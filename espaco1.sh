@@ -3,7 +3,6 @@ shopt -s extglob
 function espaco() {
     local dir="$1"
     local space=0
-    echo $1
     echo dirstart
     if [[ ! -d "$dir" ]]; then
         echo "Erro: Diretório inválido"
@@ -11,8 +10,9 @@ function espaco() {
     fi
     directories=($(find "$dir" -type d))
     for i in "${directories[@]}"; do
+	echo $i
 	for j in "$i"/*; do
-
+		echo $j
 	        if [[ ! -d "$j" ]]; then
 	            space=$(du "$j" | awk '{print $1}' | grep -oE '[0-9.]+')
 	        fi
