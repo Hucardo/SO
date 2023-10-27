@@ -24,7 +24,7 @@ while getopts ":d:n:r:a:s:l:" opt; do
             # Handle option -a if needed
             ;;
         s)
-            # Handle option -s if needed
+            flag_s="$OPTARG"
             ;;
         l)
             # Handle option -l if needed
@@ -47,7 +47,7 @@ function espaco() {
         echo "Erro: Diretório inválido"
         return 1
     fi
-    files=($(find "$dir" -maxdepth 1 -type f -name "$flag_n" ! -newermt "@$flag_d"))
+    files=($(find "$dir" -maxdepth 1 -type f -name "$flag_n" -size +"$flag_s"c ! -newermt "@$flag_d"))
     for j in "${files[@]}"; do
         if [[ ! -d "$j" ]]; then
             space=$(du "$j" | awk '{print $1}' | grep -oE '[0-9.]+')
@@ -63,10 +63,20 @@ function subespaco(){
 		espaco $i
 		lista[$i]=$total_var
 	done
+	#ORDENAR LISTA AQUI USANDO AS FLAGS
+	#
+	#
+	#
+	#
+	#
+	#
+	#ORDENAR LISTA AQUI USANDO AS FLAGS
 }
 
 function print() {
 	for i in "${!lista[@]}" ; do
+		#colocar limitador aqui segundo a flag -l
+		#eu posso fazer esta
         	echo "${lista[$i]} $i"
 	done
 }
