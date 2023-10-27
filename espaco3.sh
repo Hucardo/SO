@@ -6,11 +6,11 @@ flag_n="*"
 flag_s=0
 flag_r=0
 flag_a=0
-flag_l=9999
+flag_l=0
 
 
 
-while getopts ":d:n:r:a:s:l:" opt; do
+while getopts ":d:n:ra:s:l:" opt; do
     case $opt in
         d)
             flag_d=$(date -d "$OPTARG" +%s)
@@ -19,10 +19,10 @@ while getopts ":d:n:r:a:s:l:" opt; do
             flag_n="$OPTARG"
             ;;
         r)
-            # Handle option -r if needed
+            flag_a=1
             ;;
         a)
-            # Handle option -a if needed
+            flag_r=1
             ;;
         s)
             flag_s="$OPTARG"
@@ -76,7 +76,7 @@ function subespaco(){
 function print() {
     count=1
 	for i in "${!lista[@]}" ; do
-		if [[ ! $count -gt $flag_l ]] ; then
+		if [[ ! $count -gt $flag_l ]] || [[ $flag_l -eq 0 ]] ; then
         	echo "${lista[$i]} $i"
             count=$(( $count + 1 ))
         fi
@@ -87,7 +87,7 @@ declare -A lista
 #Testes
 for l in "$@"; do
     if [[ -d "$l" ]]; then
-	    subespaco $l
+	    subespaco
     fi
 done
-print $lista
+print
