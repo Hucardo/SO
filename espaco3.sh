@@ -15,21 +15,19 @@ function espaco() {
 	    echo $space
         fi
         total_var=$(echo "$total_var + $space" | bc)
+	echo $total_var
     done
 }
 
 
 #Testes
 total_var=0
-espaco aula01
+espaco teste01
 total1=$total_var
 total_var=0
-espaco aula02
+espaco teste02
 total2=$total_var
-total_var=0
-espaco aula03
-total3=$total_var
 
 echo "Total Disk Usage for aula01: $total1"
 echo "Total Disk Usage for aula02: $total2"
-echo "Total Disk Usage for aula03: $total3"
+
