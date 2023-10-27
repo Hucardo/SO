@@ -31,13 +31,13 @@ function espaco() {
 
 #Testes
 total_var=0
-espaco ../aula01
+espaco aula01
 total1=$total_var
 total_var=0
-espaco ../aula02
+espaco aula02
 total2=$total_var
 total_var=0
-espaco ../aula03
+espaco aula03
 total3=$total_var
 
 echo "Total Disk Usage for AED: $total1"
