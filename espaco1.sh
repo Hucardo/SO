@@ -11,14 +11,20 @@ function espaco() {
     directories=($(find "$dir" -type d))
     for i in "${directories[@]}"; do
 	echo $i
-	for j in "$i"/*; do
-		echo $j
-	        if [[ ! -d "$j" ]]; then
-	            space=$(du "$j" | awk '{print $1}' | grep -oE '[0-9.]+')
-		    echo $space
-	        fi
-	        total_var=$(echo "$total_var + $space" | bc)
-	done
+	files=("$i"/*)
+	echo "numero de ficheiros: ${#files[@]}"
+	if [[ ${#files[@]} -eq 1 ]] ; then
+		echo "vazio"
+	else
+		for j in "${files[@]}"; do
+			echo $j
+		        if [[ ! -d "$j" ]]; then
+		            space=$(du "$j" | awk '{print $1}' | grep -oE '[0-9.]+')
+			    echo $space
+		        fi
+		        total_var=$(echo "$total_var + $space" | bc)
+		done
+	fi
     done
 }
 
