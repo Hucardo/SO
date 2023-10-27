@@ -1,6 +1,7 @@
 #!/bin/bash
 
-flag_d=$(date -d $(date "+%b %d %H:%M") +%s)
+
+flag_d=$(date +%s)
 flag_n="*"
 flag_s=0
 flag_r=0
@@ -37,7 +38,6 @@ while getopts ":d:n:r:a:s:l:" opt; do
             ;;
     esac
 done
-
 echo "SIZE NAME $(date +%Y%m%d) $@"
 
 function espaco() {
@@ -47,7 +47,7 @@ function espaco() {
         echo "Erro: Diretório inválido"
         return 1
     fi
-    files=($(find "$dir" -maxdepth 1 -type f -name "$flag_n" -size +"$flag_s"c ! -newermt "@$flag_d"))
+    files=($(find "$dir" -type f -name "$flag_n" -size +"$flag_s"c ! -newermt "@$flag_d"))
     for j in "${files[@]}"; do
         if [[ ! -d "$j" ]]; then
             space=$(du "$j" | awk '{print $1}' | grep -oE '[0-9.]+')
@@ -57,7 +57,7 @@ function espaco() {
 }
 
 function subespaco(){
-	dirs=($(find "$1" -type d))
+	dirs=($(find "$l" -type d))
 	for i in "${dirs[@]}"; do
 		total_var=0
 		espaco $i
@@ -84,8 +84,8 @@ function print() {
 declare -A lista
 #Testes
 for l in "$@"; do
-	subespaco $l
+    if [[ -d "$l" ]]; then
+	    subespaco $l
+    fi
 done
-
-
-
+print $lista
