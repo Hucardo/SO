@@ -1,5 +1,10 @@
 #!/bin/bash
 
+if (( $# == 0 )); then
+    echo "Erro: Nenhum argumento especificado"
+    exit 1
+fi
+
 #valores por predefinição das flags
 flag_d=$(date +%s) #HOJE
 flag_n="*" #TODOS OS FICHEIROS
@@ -61,35 +66,65 @@ function espaco() {
 function subespaco(){
 	dirs=($(find "$l" -type d))
 	for i in "${dirs[@]}"; do
-		total_var=0
+		echo $i
+        total_var=0
 		espaco $i
-		lista[$i]=$total_var
+		dict[$i]=$total_var
 	done
-	#ORDENAR LISTA AQUI USANDO AS FLAGS
-	#
-	#
-	#
-	#
-	#
-	#
-	#ORDENAR LISTA AQUI USANDO AS FLAGS
 }
 
-function print() {
+function ordenador(){
+    #Completar para nao calcular arreis desnecessariamente
+    #basicamente mete aqui um if com as flags
+    #podes mudar o nome dos arrais todos para o mesmo nome porque so 1 vai ser calculado
+    #
+    #
+    #
+    #
+    ordered=($(for i in "${!dict[@]}"; do
+                 echo "$i ${dict[$i]}"
+             done | sort -k2,2nr | cut -d' ' -f1))
+
+    reversed=($(for i in "${!dict[@]}"; do
+                 echo "$i ${dict[$i]}"
+             done | sort -k2,2n | cut -d' ' -f1))
+
+    alphabetic=($(for i in "${!dict[@]}"; do
+                   echo "$i"
+               done | sort))
+
+    reversed_alphabetic=($(for i in "${!dict[@]}"; do
+                            echo "$i"
+                        done | sort -r))
+}
+
+function printer() {
+    #Alterar para imprimir as cenas certas
+    #aqui nao e preciso mudar muito se meteres os arrays do ordenador todos com o mesmo nome
+    #
+    #
     count=1
-	for i in "${!lista[@]}" ; do
+	for i in "${!dict[@]}" ; do
 		if [[ ! $count -gt $flag_l ]] || [[ $flag_l -eq 0 ]] ; then
-        	echo "${lista[$i]} $i"
+        	echo "${dict[$i]} $i"
             count=$(( $count + 1 ))
         fi
 	done
 }
+#apagar os arrays desnecessarios
+#
+#
+#
 
-declare -A lista
+declare -A dict
+declare -a ordered
+declare -a reversed
+declare -a alphabetic
+declare -a reversed_alphabetic
 #Testes
 for l in "$@"; do
     if [[ -d "$l" ]]; then
 	    subespaco
     fi
 done
-print
+printer
