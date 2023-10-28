@@ -1,33 +1,34 @@
 #!/bin/bash
 
-flag_d=$(date -d $(date "+%b %d %H:%M") +%s)
-flag_n="*"
-flag_s=0
-flag_r=0
-flag_a=0
-flag_l=0
+#valores por predefinição das flags
+flag_d=$(date +%s) #HOJE
+flag_n="*" #TODOS OS FICHEIROS
+flag_s=0 #>=0 kbs
+flag_r=0 #Ordem decrescente
+flag_a=0 #Sem ordenação por nome
+flag_l=0 #Sem limite de linhas
 
 
 
-while getopts ":d:n:r:a:s:l:" opt; do
+while getopts ":d:n:ra:s:l:" opt; do
     case $opt in
         d)
-            flag_d=$(date -d "$OPTARG" +%s)
+            flag_d=$(date -d "$OPTARG" +%s) #Data especificada (No formato M d HH:MM)
             ;;
         n)
-            flag_n="$OPTARG"
+            flag_n="$OPTARG" #ficheiros com o padrão especificado
             ;;
         r)
-            # Handle option -r if needed
+            flag_r=1 #Ordem crescente
             ;;
         a)
-            # Handle option -a if needed
+            flag_a=1 #Com ordenação por nome
             ;;
         s)
-            flag_s="$OPTARG"
+            flag_s="$OPTARG" #>=flag_s kbs
             ;;
         l)
-            # Handle option -l if needed
+            flag_l="$OPTARG" #Com limite de linhas flag_l
             ;;
         \?)
             echo "Invalid option: -$OPTARG"
@@ -37,27 +38,28 @@ while getopts ":d:n:r:a:s:l:" opt; do
             ;;
     esac
 done
-
 echo "SIZE NAME $(date +%Y%m%d) $@"
 
 function espaco() {
     local dir="$1"
     local space=0
-    if [[ ! -d "$dir" ]]; then
+    if [[ ! -d "$dir" ]]; then #se não for um diretório
         echo "Erro: Diretório inválido"
         return 1
     fi
-    files=($(find "$dir" -maxdepth 1 -type f -name "$flag_n" -size +"$flag_s"c ! -newermt "@$flag_d"))
-    for j in "${files[@]}"; do
-        if [[ ! -d "$j" ]]; then
-            space=$(du "$j" | awk '{print $1}' | grep -oE '[0-9.]+')
+    files=($(find "$dir" -type f -name "$flag_n" ! -newermt "@$flag_d")) #encontra os ficheiros em $dir com o nome a corresponder a $flag_n alterados não depois de $Flag_d
+    for j in "${files[@]}"; do #itera sobre a lista de ficheiros encontrados
+        if [[ ! -d "$j" ]]; then #podemos remover
+            space=$(du "$j" | awk '{print $1}' | grep -oE '[0-9.]+') #encontra o tamanho do ficheiro usando du
         fi
-        total_var=$(echo "$total_var + $space" | bc)
+        if [[ $space -ge $flag_s ]] ; then #verifica se o tamanho do ficheiro encontra os requisitos de tamanho
+            total_var=$(echo "$total_var + $space" | bc) #soma o espaço do ficheiro analisado ao total até agora
+        fi
     done
 }
 
 function subespaco(){
-	dirs=($(find "$1" -type d))
+	dirs=($(find "$l" -type d))
 	for i in "${dirs[@]}"; do
 		total_var=0
 		espaco $i
@@ -74,18 +76,20 @@ function subespaco(){
 }
 
 function print() {
+    count=1
 	for i in "${!lista[@]}" ; do
-		#colocar limitador aqui segundo a flag -l
-		#eu posso fazer esta
+		if [[ ! $count -gt $flag_l ]] || [[ $flag_l -eq 0 ]] ; then
         	echo "${lista[$i]} $i"
+            count=$(( $count + 1 ))
+        fi
 	done
 }
 
 declare -A lista
 #Testes
 for l in "$@"; do
-	subespaco $l
+    if [[ -d "$l" ]]; then
+	    subespaco
+    fi
 done
-
-
-
+print
