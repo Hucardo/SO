@@ -1,6 +1,9 @@
 #!/bin/bash
 
-
+if (( $# == 0 )); then
+    echo "Erro: Nenhum argumento especificado"
+    exit 1
+fi
 
 #valores por predefinição das flags
 flag_d=$(date +%s) #HOJE
