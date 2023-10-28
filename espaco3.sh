@@ -82,20 +82,16 @@ function ordenador(){
     #
     #
     ordered=($(for i in "${!dict[@]}"; do
-                 echo "$i ${dict[$i]}"
-             done | sort -k2,2nr | cut -d' ' -f1))
+        done | sort -k2,2nr | cut -d' ' -f1))
 
     reversed=($(for i in "${!dict[@]}"; do
-                 echo "$i ${dict[$i]}"
-             done | sort -k2,2n | cut -d' ' -f1))
+        done | sort -k2,2n | cut -d' ' -f1))
 
     alphabetic=($(for i in "${!dict[@]}"; do
-                   echo "$i"
-               done | sort))
+        done | sort))
 
     reversed_alphabetic=($(for i in "${!dict[@]}"; do
-                            echo "$i"
-                        done | sort -r))
+        done | sort -r))
 }
 
 function printer() {
