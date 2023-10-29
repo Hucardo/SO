@@ -71,45 +71,43 @@ function espaco() {
 }
 
 function ordenador(){
-    #Completar para nao calcular arreis desnecessariamente
-    #basicamente mete aqui um if com as flags
-    #podes mudar o nome dos arrais todos para o mesmo nome porque so 1 vai ser calculado
-    #
-    #
-    #
-    #
-    ordered=($(for i in "${!dict[@]}"; do
-        done | sort -k2,2nr | cut -d' ' -f1))
+    
+    ordered=($(for i in "${!dict[@]}"; do 
+                 echo "$i ${dict[$i]}"
+             done | sort -k2,2nr | cut -d' ' -f1)) #ordena a dict por ordem decrescente de tamanho e guarda os nomes dos diretórios ordenados
 
-    reversed=($(for i in "${!dict[@]}"; do
-        done | sort -k2,2n | cut -d' ' -f1))
+    if [[ $flag_r -eq 1 ]]; then
+        ordered=($(for i in "${!dict[@]}"; do
+                     echo "$i ${dict[$i]}"
+                 done | sort -k2,2n | cut -d' ' -f1)) #ordena a dict por ordem crescente de tamanho e guarda os nomes dos diretórios ordenados
+    fi
 
-    alphabetic=($(for i in "${!dict[@]}"; do
-        done | sort))
+    if [[ $flag_a -eq 1 ]]; then
+        ordered=($(for i in "${!dict[@]}"; do
+                     echo "$i"
+                 done | sort)) #ordena a dict por ordem alfabetica e guarda os nomes dos diretórios ordenados
+    fi
 
-    reversed_alphabetic=($(for i in "${!dict[@]}"; do
-        done | sort -r))
+    if [[ $flag_r -eq 1 ]] && [[ $flag_a -eq 1 ]]; then
+        ordered=($(for i in "${!dict[@]}"; do
+                     echo "$i"
+                 done | sort -r)) #ordena a dict por ordem alfabetica reversa e guarda os nomes dos diretórios ordenados
+    fi
 }
 
 function printer() {
+    ordenador
     count=1
-	for i in "${!dict[@]}" ; do
-		if [[ ! $count -gt $flag_l ]] || [[ $flag_l -eq 0 ]] ; then
-        	echo "${dict[$i]} $i"
+	 for i in "${ordered[@]}" ; do
+        if [[ ! $count -gt $flag_l ]] || [[ $flag_l -eq 0 ]] ; then
+            echo "${dict[$i]} $i"
             count=$(( $count + 1 ))
         fi
-	done
+    done
 }
-#apagar os arrays desnecessarios
-#
-#
-#
 
 declare -A dict
 declare -a ordered
-declare -a reversed
-declare -a alphabetic
-declare -a reversed_alphabetic
 
 #Testes
 for l in "$@"; do
@@ -119,4 +117,3 @@ for l in "$@"; do
     fi
 done
 printer
-

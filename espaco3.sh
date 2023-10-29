@@ -106,6 +106,13 @@ function printer() {
             count=$(( $count + 1 ))
         fi
 	done
+
+    for i in "${ordered[@]}" ; do
+        if [[ ! $count -gt $flag_l ]] || [[ $flag_l -eq 0 ]] ; then
+        	echo "${dict[$i]} $i"
+            count=$(( $count + 1 ))
+        fi
+    done
 }
 #apagar os arrays desnecessarios
 #
@@ -124,3 +131,4 @@ for l in "$@"; do
     fi
 done
 printer
+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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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
