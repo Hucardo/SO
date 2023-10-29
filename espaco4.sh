@@ -81,7 +81,7 @@ function espaco() {
     for j in "${files[@]}"; do #itera sobre a dict de ficheiros encontrados
         space=$(du "$j" | awk '{print $1}' | grep -oE '[0-9.]+') #encontra o tamanho do ficheiro usando du
         if [[ $space -ge $flag_s ]] ; then #verifica se o tamanho do ficheiro encontra os requisitos de tamanho
-            total_var=$(echo "$total_var + $space" | bc) #soma o espaço do ficheiro analisado ao total até agora
+            total_var=$(( $total_var + $space )) #soma o espaço do ficheiro analisado ao total até agora
         fi
     done
     for k in "${dirs[@]}"; do
