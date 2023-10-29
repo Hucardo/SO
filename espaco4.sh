@@ -15,7 +15,7 @@ flag_l=0 #Sem limite de linhas
 
 
 
-while getopts ":d:n:ras:l:" opt; do
+while getopts "d:n:ras:l:" opt; do
     case $opt in
         d)
             if [[ ! $input_string =~ "^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) [1-9]|[1-2][0-9]|3[0-1] [0-1][0-9]|2[0-3]:[0-5][0-9]$" ]]; then
