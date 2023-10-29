@@ -1,5 +1,7 @@
 #!/bin/bash
 
+IFS=$'\n'
+
 if (( $# == 0 )); then
     echo "Erro: Nenhum argumento especificado"
     exit 1
@@ -76,57 +78,99 @@ function espaco() {
         echo "Erro: Diretório inválido"
         return 1
     fi
-    dirs=($(find "$dir" -mindepth 1 -maxdepth 1 -type d))
-    files=($(find "$dir" -maxdepth 1 -type f -name "$flag_n" ! -newermt "@$flag_d")) #encontra os ficheiros em $dir com o nome a corresponder a $flag_n alterados não depois de $Flag_d
+
+    dirs=()
+    # Use process substitution and while loop to read find output line by line
+    while IFS= read -r -d '' directory; do
+        dirs+=("$directory")
+    done < <(find "$dir" -mindepth 1 -maxdepth 1 -type d ! -name "*.*" -print0)
+
+    files=()
+    # Use process substitution and while loop to read find output line by line
+    while IFS= read -r -d '' file; do
+        files+=("$file")
+    done < <(find "$dir" -maxdepth 1 -type f -name "$flag_n" ! -newermt "@$flag_d" -print0)
+
+    #encontra os ficheiros em $dir com o nome a corresponder a $flag_n alterados não depois de $Flag_d
     for j in "${files[@]}"; do #itera sobre a dict de ficheiros encontrados
         space=$(du "$j" | awk '{print $1}' | grep -oE '[0-9.]+') #encontra o tamanho do ficheiro usando du
         if [[ $space -ge $flag_s ]] ; then #verifica se o tamanho do ficheiro encontra os requisitos de tamanho
-            total_var=$(( $total_var + $space )) #soma o espaço do ficheiro analisado ao total até agora
+            total_var=$(echo "$total_var + $space" | bc) #soma o espaço do ficheiro analisado ao total até agora
         fi
     done
     for k in "${dirs[@]}"; do
         temp_var=$total_var
         total_var=0
-        espaco $k
+        espaco "$k"
         total_var=$(( $temp_var + $total_var ))
     done
-    dict[$dir]=$total_var
+    dict["$dir"]=$total_var
 }
 
 function ordenador(){
-    
-    ordered=($(for i in "${!dict[@]}"; do
-        echo "$i ${dict[$i]}"
-             done | sort -k2,2nr | cut -d' ' -f1)) #ordena a dict por ordem decrescente de tamanho e guarda os nomes dos diretórios ordenados
+    for i in "${!dict[@]}"; do
+        if [[ "${dict["$i"]}" == "" ]]; then
+            dict["$i"]=NA
+        fi
+    done
 
-    if [[ $flag_r -eq 1 ]]; then
-        ordered=($(for i in "${!dict[@]}"; do
-                     echo "$i ${dict[$i]}"
-        done | sort -k2,2n | cut -d' ' -f1)) #ordena a dict por ordem crescente de tamanho e guarda os nomes dos diretórios ordenados
+    IFS=$'\n'
+    if [[ $flag_r -eq 0 ]] && [[ $flag_a -eq 0 ]]; then
+        for key in "${!dict[@]}"; do
+            printf "%s %s\n" "${dict["$key"]}" "$key"
+        done | sort -k1,1nr | while read -r line; do
+            space=$(echo "$line" | awk '{print $1}')
+            dir=$(echo "$line" | cut -d" " -f2-)
+            printf "%s %s\n" "$space" "$dir"
+        done #ordena a dict por ordem decrescente de tamanho e guarda os nomes dos diretórios ordenados
     fi
 
-    if [[ $flag_a -eq 1 ]]; then
-        ordered=($(for i in "${!dict[@]}"; do
-                     echo "$i"
-                 done | sort)) #ordena a dict por ordem alfabetica e guarda os nomes dos diretórios ordenados
+    if [[ $flag_r -eq 1 ]] && [[ $flag_a -eq 0 ]]; then
+        for key in "${!dict[@]}"; do
+            printf "%s %s\n" "${dict["$key"]}" "$key"
+        done | sort -k1,1n | while read -r line; do
+            space=$(echo "$line" | awk '{print $1}')
+            dir=$(echo "$line" | cut -d" " -f2-)
+            printf "%s %s\n" "$space" "$dir"
+        done #ordena a dict por ordem crescente de tamanho e guarda os nomes dos diretórios ordenados
+    fi
+
+    if [[ $flag_a -eq 1 ]] && [[ $flag_r -eq 0 ]]; then
+        for key in "${!dict[@]}"; do
+            printf "%s %s\n" "${dict["$key"]}" "$key"
+        done | sort -k2,2 | while read -r line; do
+            space=$(echo "$line" | awk '{print $1}')
+            dir=$(echo "$line" | cut -d" " -f2-)
+            printf "%s %s\n" "$space" "$dir"
+        done #ordena a dict por ordem alfabetica e guarda os nomes dos diretórios ordenados
     fi
 
     if [[ $flag_r -eq 1 ]] && [[ $flag_a -eq 1 ]]; then
-        ordered=($(for i in "${!dict[@]}"; do
-                     echo "$i"
-        done | sort -r)) #ordena a dict por ordem alfabetica reversa e guarda os nomes dos diretórios ordenados
+        for key in "${!dict[@]}"; do
+            printf "%s %s\n" "${dict["$key"]}" "$key"
+        done | sort -k2,2r | while read -r line; do
+            space=$(echo "$line" | awk '{print $1}')
+            dir=$(echo "$line" | cut -d" " -f2-)
+            printf "%s %s\n" "$space" "$dir"
+        done #ordena a dict por ordem alfabetica reversa e guarda os nomes dos diretórios ordenados
     fi
+    unset IFS
 }
 
 function printer() {
     ordenador
-    count=1
-	for i in "${ordered[@]}" ; do
-		if [[ ! $count -gt $flag_l ]] || [[ $flag_l -eq 0 ]] ; then
-        	echo "${dict[$i]} $i"
-            count=$(( $count + 1 ))
-        fi
-	done
+    #count=1
+	#for i in "${ordered[@]}" ; do
+	#	if [[ ! $count -gt $flag_l ]] || [[ $flag_l -eq 0 ]] ; then
+    #        num=$i
+    #        if [[ $num == -1 ]]; then
+    #            num="NA"
+    #        fi
+    #       echo wot
+    #    	echo "$num ${dict["$i"]}"
+    #        count=$(( $count + 1 ))
+    #    fi
+	#done
 }
 #apagar os arrays desnecessarios
 #
@@ -143,8 +187,8 @@ declare -a reversed_alphabetic
 for l in "$@"; do
     if [[ -d "$l" ]]; then
         total_var=0
-	    espaco $l
+	    espaco "$l"
     fi
 done
 printer
-
+unset IFS
