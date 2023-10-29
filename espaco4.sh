@@ -15,13 +15,22 @@ flag_l=0 #Sem limite de linhas
 
 
 
-while getopts ":d:n:ra:s:l:" opt; do
+while getopts ":d:n:ras:l:" opt; do
     case $opt in
         d)
+            if [[ ! $input_string =~ "^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) [1-9]|[1-2][0-9]|3[0-1] [0-1][0-9]|2[0-3]:[0-5][0-9]$" ]]; then
+                echo "-d requere uma data do tipo '$(date "+%b %d %H:%M")'"
+                exit 1
+            fi
+
             flag_d=$(date -d "$OPTARG" +%s) #Data especificada (No formato M d HH:MM)
             ;;
         n)
             flag_n="$OPTARG" #ficheiros com o padrão especificado
+            if [[ "${flag_n:0:1}" == "-" ]]; then
+                echo "-n requere uma string (pattern)"
+                exit 1
+            fi
             ;;
         r)
             flag_r=1 #Ordem crescente
@@ -31,9 +40,17 @@ while getopts ":d:n:ra:s:l:" opt; do
             ;;
         s)
             flag_s="$OPTARG" #>=flag_s kbs
+            if [[ ! $flag_s =~ ^[0-9]+$ ]]; then
+                echo "-s requere um número."
+                exit 1
+            fi
             ;;
         l)
             flag_l="$OPTARG" #Com limite de linhas flag_l
+            if [[ ! $flag_l =~ ^[0-9]+$ ]]; then
+                echo "-l requere um número."
+                exit 1
+            fi
             ;;
         \?)
             echo "Invalid option: -$OPTARG"
@@ -43,6 +60,12 @@ while getopts ":d:n:ra:s:l:" opt; do
             ;;
     esac
 done
+
+if [[ -z "$flag_d" ]] || [[ -z "$flag_n" ]] || [[ -z "$flag_s" ]] || [[ -z "$flag_l" ]]; then
+    echo "Required options are missing or have no arguments."
+    exit 1
+fi
+
 echo "SIZE NAME $(date +%Y%m%d) $@"
 
 function espaco() {
@@ -72,14 +95,14 @@ function espaco() {
 
 function ordenador(){
     
-    ordered=($(for i in "${!dict[@]}"; do 
-                 echo "$i ${dict[$i]}"
+    ordered=($(for i in "${!dict[@]}"; do
+        echo "$i ${dict[$i]}"
              done | sort -k2,2nr | cut -d' ' -f1)) #ordena a dict por ordem decrescente de tamanho e guarda os nomes dos diretórios ordenados
 
     if [[ $flag_r -eq 1 ]]; then
         ordered=($(for i in "${!dict[@]}"; do
                      echo "$i ${dict[$i]}"
-                 done | sort -k2,2n | cut -d' ' -f1)) #ordena a dict por ordem crescente de tamanho e guarda os nomes dos diretórios ordenados
+        done | sort -k2,2n | cut -d' ' -f1)) #ordena a dict por ordem crescente de tamanho e guarda os nomes dos diretórios ordenados
     fi
 
     if [[ $flag_a -eq 1 ]]; then
@@ -91,23 +114,30 @@ function ordenador(){
     if [[ $flag_r -eq 1 ]] && [[ $flag_a -eq 1 ]]; then
         ordered=($(for i in "${!dict[@]}"; do
                      echo "$i"
-                 done | sort -r)) #ordena a dict por ordem alfabetica reversa e guarda os nomes dos diretórios ordenados
+        done | sort -r)) #ordena a dict por ordem alfabetica reversa e guarda os nomes dos diretórios ordenados
     fi
 }
 
 function printer() {
     ordenador
     count=1
-	 for i in "${ordered[@]}" ; do
-        if [[ ! $count -gt $flag_l ]] || [[ $flag_l -eq 0 ]] ; then
-            echo "${dict[$i]} $i"
+	for i in "${ordered[@]}" ; do
+		if [[ ! $count -gt $flag_l ]] || [[ $flag_l -eq 0 ]] ; then
+        	echo "${dict[$i]} $i"
             count=$(( $count + 1 ))
         fi
-    done
+	done
 }
+#apagar os arrays desnecessarios
+#
+#
+#
 
 declare -A dict
 declare -a ordered
+declare -a reversed
+declare -a alphabetic
+declare -a reversed_alphabetic
 
 #Testes
 for l in "$@"; do
@@ -117,3 +147,4 @@ for l in "$@"; do
     fi
 done
 printer
+
