@@ -68,7 +68,6 @@ if [[ -z "$flag_d" ]] || [[ -z "$flag_n" ]] || [[ -z "$flag_s" ]] || [[ -z "$fla
     exit 1
 fi
 
-echo "SIZE NAME $(date +%Y%m%d) $@"
 
 function espaco() {
     local temp_var=0
@@ -107,14 +106,13 @@ function espaco() {
     dict["$dir"]=$total_var
 }
 
-function ordenador(){
+function printer(){
     for i in "${!dict[@]}"; do
         if [[ "${dict["$i"]}" == "" ]]; then
             dict["$i"]=NA
         fi
     done
 
-    IFS=$'\n'
     if [[ $flag_r -eq 0 ]] && [[ $flag_a -eq 0 ]]; then
         for key in "${!dict[@]}"; do
             printf "%s %s\n" "${dict["$key"]}" "$key"
@@ -154,41 +152,25 @@ function ordenador(){
             printf "%s %s\n" "$space" "$dir"
         done #ordena a dict por ordem alfabetica reversa e guarda os nomes dos diretórios ordenados
     fi
-    unset IFS
 }
 
-function printer() {
-    ordenador
-    #count=1
-	#for i in "${ordered[@]}" ; do
-	#	if [[ ! $count -gt $flag_l ]] || [[ $flag_l -eq 0 ]] ; then
-    #        num=$i
-    #        if [[ $num == -1 ]]; then
-    #            num="NA"
-    #        fi
-    #       echo wot
-    #    	echo "$num ${dict["$i"]}"
-    #        count=$(( $count + 1 ))
-    #    fi
-	#done
-}
-#apagar os arrays desnecessarios
-#
-#
-#
 
+#MAIN
 declare -A dict
-declare -a ordered
-declare -a reversed
-declare -a alphabetic
-declare -a reversed_alphabetic
 
-#Testes
+
 for l in "$@"; do
     if [[ -d "$l" ]]; then
         total_var=0
 	    espaco "$l"
     fi
 done
+
+if [[ "${#dict[@]}" == 0 ]]; then
+    echo "Nenhum diretório inserido."
+    exit 1
+fi
+
+echo "SIZE NAME $(date +%Y%m%d) $@"
 printer
 unset IFS
