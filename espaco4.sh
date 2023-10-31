@@ -72,7 +72,7 @@ function espaco() {
     local temp_var=0
     local dir="$1"
     counting=$(( $counting + 1 ))
-    #echo "$counting: $dir"
+    echo "$counting: $dir"
     local space=0
     if [[ ! -d "$dir" ]]; then #se não for um diretório
         echo "Erro: Diretório inválido"
@@ -90,8 +90,7 @@ function espaco() {
     check=$?
     if [[ $check -eq 1 ]]; then
         dict["$dir"]=-1
-        #echo "SUIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII"
-        exit 1
+        return 1
     fi
     # Use process substitution and while loop to read find output line by line
     while IFS= read -r -d '' file; do
@@ -157,7 +156,7 @@ function printer(){
     if [[ $flag_a -eq 1 ]] && [[ $flag_r -eq 0 ]]; then
         for key in "${!dict[@]}"; do
             printf "%s %s\n" "${dict["$key"]}" "$key"
-        done | sort -k2,2 | while read -r line; do
+        done | sort -k2,1000 | while read -r line; do
             if [[ $counter -gt $flag_l ]] && [[ $flag_l -ne 0 ]]; then
                 exit 0
             fi
@@ -171,7 +170,7 @@ function printer(){
     if [[ $flag_r -eq 1 ]] && [[ $flag_a -eq 1 ]]; then
         for key in "${!dict[@]}"; do
             printf "%s %s\n" "${dict["$key"]}" "$key"
-        done | sort -k2,2r | while read -r line; do
+        done | sort -k2,1000r | while read -r line; do
             if [[ $counter -gt $flag_l ]] && [[ $flag_l -ne 0 ]]; then
                 exit 0
             fi
