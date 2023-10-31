@@ -85,7 +85,6 @@ do
 
   size=$(echo "$line" | cut -d\  -f1)
   name=$(echo "$line" | cut -d\  -f2-)
-  echo $name
 
   dictnovo["$name"]=$size
 
