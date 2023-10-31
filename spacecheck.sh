@@ -72,7 +72,6 @@ function espaco() {
     local temp_var=0
     local dir="$1"
     counting=$(( $counting + 1 ))
-    echo "$counting: $dir"
     local space=0
     if [[ ! -d "$dir" ]]; then #se não for um diretório
         echo "Erro: Diretório inválido"
@@ -87,6 +86,7 @@ function espaco() {
 
     files=()
     find "$dir" -maxdepth 1 -type f -name "$flag_n" ! -newermt "@$flag_d" -print0 2>/dev/null > discard.txt
+    rm discard.txt
     check=$?
     if [[ $check -eq 1 ]]; then
         dict["$dir"]=-1

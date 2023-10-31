@@ -67,8 +67,8 @@ do
     continue  
   fi
 
-  size=$(echo "$line" | awk '{print $1}')
-  name=$(echo "$line" | awk '{print $2}')
+  size=$(echo "$line" | cut -d\  -f1)
+  name=$(echo "$line" | cut -d\  -f2-)
 
   dictantigo["$name"]=$size
 
@@ -83,8 +83,9 @@ do
     continue  
   fi
 
-  size=$(echo "$line" | awk '{print $1}')
-  name=$(echo "$line" | awk '{print $2}')
+  size=$(echo "$line" | cut -d\  -f1)
+  name=$(echo "$line" | cut -d\  -f2-)
+  echo $name
 
   dictnovo["$name"]=$size
 
@@ -106,6 +107,7 @@ for key in "${!dictantigo[@]}"; do
     fi
 done
 
+echo "SIZE NAME"
 if [[ $flag_r -eq 0 ]] && [[ $flag_a -eq 0 ]]; then
     for key in "${!dictfinal[@]}"; do
         printf "%s %s\n" "${dictfinal["$key"]}" "$key"
