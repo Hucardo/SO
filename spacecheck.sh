@@ -12,7 +12,7 @@ flag_d=$(date +%s) #HOJE
 flag_n="*" #TODOS OS FICHEIROS
 flag_s=0 #>=0 kbs
 flag_r=0 #Ordem decrescente
-flag_a=0 #Sem ordenação por nome
+flag_a="1,1n" #Sem ordenação por nome
 flag_l=0 #Sem limite de linhas
 
 
@@ -37,7 +37,7 @@ while getopts "d:n:ras:l:" opt; do
             flag_r=1 #Ordem crescente
             ;;
         a)
-            flag_a=1 #Com ordenação por nome
+            flag_a="2,1000" #Com ordenação por nome
             ;;
         s)
             flag_s="$OPTARG" #>=flag_s kbs
@@ -66,6 +66,11 @@ if [[ -z "$flag_d" ]] || [[ -z "$flag_n" ]] || [[ -z "$flag_s" ]] || [[ -z "$fla
     echo "Required options are missing or have no arguments."
     exit 1
 fi
+
+[[ $flag_a == "1,1n" && $flag_r == 0 ]] && flag_r="" || [[ $flag_a == "1,1000" && $flag_r == ""]] || [[ $flag_a ==]]
+
+
+
 
 
 function espaco() {
@@ -121,65 +126,20 @@ function espaco() {
 
 function printer(){
     counter=1
-
-    if [[ $flag_r -eq 0 ]] && [[ $flag_a -eq 0 ]]; then
-        for key in "${!dict[@]}"; do
-            printf "%s %s\n" "${dict["$key"]}" "$key"
-        done | sort -k1,1nr | while read -r line; do
-            if [[ $counter -gt $flag_l ]] && [[ $flag_l -ne 0 ]]; then
-                exit 0
-            fi
-            space=$(echo "$line" | awk '{print $1}')
-            if [[ $space == -1 ]]; then
-                space="NA"
-            fi
-            dir=$(echo "$line" | cut -d" " -f2-)
-            printf "%s %s\n" "$space" "$dir"
-            counter=$(( $counter + 1 ))
-        done #ordena a dict por ordem decrescente de tamanho e guarda os nomes dos diretórios ordenados
-    fi
-
-    if [[ $flag_r -eq 1 ]] && [[ $flag_a -eq 0 ]]; then
-        for key in "${!dict[@]}"; do
-            printf "%s %s\n" "${dict["$key"]}" "$key"
-        done | sort -k1,1n | while read -r line; do
-            if [[ $counter -gt $flag_l ]] && [[ $flag_l -ne 0 ]]; then
-                exit 0
-            fi
-            space=$(echo "$line" | awk '{print $1}')
-            dir=$(echo "$line" | cut -d" " -f2-)
-            printf "%s %s\n" "$space" "$dir"
-            counter=$(( $counter + 1 ))
-        done #ordena a dict por ordem crescente de tamanho e guarda os nomes dos diretórios ordenados
-    fi
-
-    if [[ $flag_a -eq 1 ]] && [[ $flag_r -eq 0 ]]; then
-        for key in "${!dict[@]}"; do
-            printf "%s %s\n" "${dict["$key"]}" "$key"
-        done | sort -k2,1000 | while read -r line; do
-            if [[ $counter -gt $flag_l ]] && [[ $flag_l -ne 0 ]]; then
-                exit 0
-            fi
-            space=$(echo "$line" | awk '{print $1}')
-            dir=$(echo "$line" | cut -d" " -f2-)
-            printf "%s %s\n" "$space" "$dir"
-            counter=$(( $counter + 1 ))
-        done #ordena a dict por ordem alfabetica e guarda os nomes dos diretórios ordenados
-    fi
-
-    if [[ $flag_r -eq 1 ]] && [[ $flag_a -eq 1 ]]; then
-        for key in "${!dict[@]}"; do
-            printf "%s %s\n" "${dict["$key"]}" "$key"
-        done | sort -k2,1000r | while read -r line; do
-            if [[ $counter -gt $flag_l ]] && [[ $flag_l -ne 0 ]]; then
-                exit 0
-            fi
-            space=$(echo "$line" | awk '{print $1}')
-            dir=$(echo "$line" | cut -d" " -f2-)
-            printf "%s %s\n" "$space" "$dir"
-            counter=$(( $counter + 1 ))
-        done #ordena a dict por ordem alfabetica reversa e guarda os nomes dos diretórios ordenados
-    fi
+    for key in "${!dict[@]}"; do
+        printf "%s %s\n" "${dict["$key"]}" "$key"
+    done | sort -k"$flag_a""$flag_r" | while read -r line; do
+        if [[ $counter -gt $flag_l ]] && [[ $flag_l -ne 0 ]]; then
+            exit 0
+        fi
+        space=$(echo "$line" | awk '{print $1}')
+        if [[ $space == -1 ]]; then
+            space="NA"
+        fi
+        dir=$(echo "$line" | cut -d" " -f2-)
+        printf "%s %s\n" "$space" "$dir"
+        counter=$(( $counter + 1 ))
+    done #ordena a dict por ordem decrescente de tamanho e guarda os nomes dos diretórios ordenados    
 }
 
 
