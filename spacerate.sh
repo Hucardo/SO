@@ -5,7 +5,7 @@ declare -A dictnovo
 declare -A dictfinal
 
 
-flag_a=0
+flag_a="1,1n"
 flag_r=0
 input_novo=""
 input_antigo=""
@@ -13,7 +13,7 @@ input_antigo=""
 while getopts "ar" opt; do
     case $opt in
         a)
-            flag_a=1
+            flag_a="1,1000"
             ;;
         r)
             flag_r=1
@@ -24,6 +24,13 @@ while getopts "ar" opt; do
             ;;
     esac
 done
+
+r="r"
+if [[ $flag_a == "1,1n" && $flag_r == 1 ]]; then
+    r=""
+elif [[ $flag_a == "1,1000" && $flag_r == 0 ]]; then
+    r=""
+fi
 
 if [[ $# < 2 ]] || [[ $# > 4 ]]; then
     echo "Usage: $0 [-a] [-r] <input_novo> <input_antigo>"
@@ -111,42 +118,10 @@ for key in "${!dictantigo[@]}"; do
 done
 
 echo "SIZE NAME"
-if [[ $flag_r -eq 0 ]] && [[ $flag_a -eq 0 ]]; then
-    for key in "${!dictfinal[@]}"; do
-        printf "%s %s\n" "${dictfinal["$key"]}" "$key"
-    done | sort -k1,1nr | while read -r line; do
-        space=$(echo "$line" | awk '{print $1}')
-        dir=$(echo "$line" | cut -d" " -f2-)
-        printf "%s %s\n" "$space" "$dir"
-    done #ordena a dict por ordem decrescente de tamanho e guarda os nomes dos diretórios ordenados
-fi
-
-if [[ $flag_r -eq 1 ]] && [[ $flag_a -eq 0 ]]; then
-    for key in "${!dictfinal[@]}"; do
-        printf "%s %s\n" "${dictfinal["$key"]}" "$key"
-    done | sort -k1,1n | while read -r line; do
-        space=$(echo "$line" | awk '{print $1}')
-        dir=$(echo "$line" | cut -d" " -f2-)
-        printf "%s %s\n" "$space" "$dir"
-    done #ordena a dict por ordem crescente de tamanho e guarda os nomes dos diretórios ordenados
-fi
-
-if [[ $flag_a -eq 1 ]] && [[ $flag_r -eq 0 ]]; then
-    for key in "${!dictfinal[@]}"; do
-        printf "%s %s\n" "${dictfinal["$key"]}" "$key"
-    done | sort -k2,1000 | while read -r line; do
-        space=$(echo "$line" | awk '{print $1}')
-        dir=$(echo "$line" | cut -d" " -f2-)
-        printf "%s %s\n" "$space" "$dir"
-    done #ordena a dict por ordem alfabetica e guarda os nomes dos diretórios ordenados
-fi
-
-if [[ $flag_r -eq 1 ]] && [[ $flag_a -eq 1 ]]; then
-    for key in "${!dictfinal[@]}"; do
-        printf "%s %s\n" "${dictfinal["$key"]}" "$key"
-    done | sort -k2,1000r | while read -r line; do
-        space=$(echo "$line" | awk '{print $1}')
-        dir=$(echo "$line" | cut -d" " -f2-)
-        printf "%s %s\n" "$space" "$dir"
-    done #ordena a dict por ordem alfabetica e guarda os nomes dos diretórios ordenados
-fi
+for key in "${!dictfinal[@]}"; do
+    printf "%s %s\n" "${dictfinal["$key"]}" "$key"
+done | sort -k"$flag_a$r" | while read -r line; do
+    space=$(echo "$line" | awk '{print $1}')
+    dir=$(echo "$line" | cut -d" " -f2-)
+    printf "%s %s\n" "$space" "$dir"
+done #ordena a dict por ordem decrescente de tamanho e guarda os nomes dos diretórios ordenados

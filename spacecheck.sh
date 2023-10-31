@@ -15,8 +15,6 @@ flag_r=0 #Ordem decrescente
 flag_a="1,1n" #Sem ordenação por nome
 flag_l=0 #Sem limite de linhas
 
-
-
 while getopts "d:n:ras:l:" opt; do
     case $opt in
         d)
@@ -67,11 +65,12 @@ if [[ -z "$flag_d" ]] || [[ -z "$flag_n" ]] || [[ -z "$flag_s" ]] || [[ -z "$fla
     exit 1
 fi
 
-[[ $flag_a == "1,1n" && $flag_r == 0 ]] && flag_r="" || [[ $flag_a == "1,1000" && $flag_r == ""]] || [[ $flag_a ==]]
-
-
-
-
+r="r"
+if [[ $flag_a == "1,1n" && $flag_r == 1 ]]; then
+    r=""
+elif [[ $flag_a == "1,1000" && $flag_r == 0 ]]; then
+    r=""
+fi
 
 function espaco() {
     local temp_var=0
@@ -84,20 +83,17 @@ function espaco() {
     fi
 
     dirs=()
-    # Use process substitution and while loop to read find output line by line
     while IFS= read -r -d '' directory; do
         dirs+=("$directory")
     done < <(find "$dir" -mindepth 1 -maxdepth 1 -type d ! -name "*.*" -print0 2>/dev/null)
 
     files=()
     find "$dir" -maxdepth 1 -type f -name "$flag_n" ! -newermt "@$flag_d" -print0 2>/dev/null > discard.txt
-    rm discard.txt
-    check=$?
-    if [[ $check -eq 1 ]]; then
+    if [[ $? -eq 1 ]]; then
         dict["$dir"]=-1
         return 1
     fi
-    # Use process substitution and while loop to read find output line by line
+
     while IFS= read -r -d '' file; do
         files+=("$file")
     done < <(find "$dir" -maxdepth 1 -type f -name "$flag_n" ! -newermt "@$flag_d" -print0 )
@@ -128,7 +124,7 @@ function printer(){
     counter=1
     for key in "${!dict[@]}"; do
         printf "%s %s\n" "${dict["$key"]}" "$key"
-    done | sort -k"$flag_a""$flag_r" | while read -r line; do
+    done | sort -k"$flag_a""$r" | while read -r line; do
         if [[ $counter -gt $flag_l ]] && [[ $flag_l -ne 0 ]]; then
             exit 0
         fi
@@ -137,11 +133,10 @@ function printer(){
             space="NA"
         fi
         dir=$(echo "$line" | cut -d" " -f2-)
-        printf "%s %s\n" "$space" "$dir"
+        echo "$space $dir"
         counter=$(( $counter + 1 ))
     done #ordena a dict por ordem decrescente de tamanho e guarda os nomes dos diretórios ordenados    
 }
-
 
 #MAIN
 declare -A dict
@@ -155,6 +150,7 @@ for l in "$@"; do
 	    espaco "$l"
     fi
 done
+rm discard.txt
 
 if [[ "${#dict[@]}" == 0 ]]; then
     echo "Nenhum diretório inserido."
