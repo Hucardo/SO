@@ -131,4 +131,3 @@ for l in "$@"; do
     fi
 done
 printer
-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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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
