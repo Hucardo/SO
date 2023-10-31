@@ -20,12 +20,11 @@ flag_l=0 #Sem limite de linhas
 while getopts "d:n:ras:l:" opt; do
     case $opt in
         d)
-            if [[ ! $input_string =~ "^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) [1-9]|[1-2][0-9]|3[0-1] [0-1][0-9]|2[0-3]:[0-5][0-9]$" ]]; then
-                echo "-d requere uma data do tipo '$(date "+%b %d %H:%M")'"
+            flag_d=$(date -d "$OPTARG" +%s 2>/dev/null) #Data especificada (No formato M d HH:MM)
+            if [[ -z $flag_d ]]; then
+                echo "Formato de data inválido"
                 exit 1
             fi
-
-            flag_d=$(date -d "$OPTARG" +%s) #Data especificada (No formato M d HH:MM)
             ;;
         n)
             flag_n="$OPTARG" #ficheiros com o padrão especificado
@@ -72,6 +71,8 @@ fi
 function espaco() {
     local temp_var=0
     local dir="$1"
+    counting=$(( $counting + 1 ))
+    #echo "$counting: $dir"
     local space=0
     if [[ ! -d "$dir" ]]; then #se não for um diretório
         echo "Erro: Diretório inválido"
@@ -82,44 +83,60 @@ function espaco() {
     # Use process substitution and while loop to read find output line by line
     while IFS= read -r -d '' directory; do
         dirs+=("$directory")
-    done < <(find "$dir" -mindepth 1 -maxdepth 1 -type d ! -name "*.*" -print0)
+    done < <(find "$dir" -mindepth 1 -maxdepth 1 -type d ! -name "*.*" -print0 2>/dev/null)
 
     files=()
+    find "$dir" -maxdepth 1 -type f -name "$flag_n" ! -newermt "@$flag_d" -print0 2>/dev/null > discard.txt
+    check=$?
+    if [[ $check -eq 1 ]]; then
+        dict["$dir"]=-1
+        #echo "SUIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII"
+        exit 1
+    fi
     # Use process substitution and while loop to read find output line by line
     while IFS= read -r -d '' file; do
         files+=("$file")
-    done < <(find "$dir" -maxdepth 1 -type f -name "$flag_n" ! -newermt "@$flag_d" -print0)
+    done < <(find "$dir" -maxdepth 1 -type f -name "$flag_n" ! -newermt "@$flag_d" -print0 )
+
 
     #encontra os ficheiros em $dir com o nome a corresponder a $flag_n alterados não depois de $Flag_d
     for j in "${files[@]}"; do #itera sobre a dict de ficheiros encontrados
-        space=$(du "$j" | awk '{print $1}' | grep -oE '[0-9.]+') #encontra o tamanho do ficheiro usando du
+        space=$(du "$j" 2>/dev/null| awk '{print $1}' | grep -oE '[0-9.]+') #encontra o tamanho do ficheiro usando du
         if [[ $space -ge $flag_s ]] ; then #verifica se o tamanho do ficheiro encontra os requisitos de tamanho
             total_var=$(echo "$total_var + $space" | bc) #soma o espaço do ficheiro analisado ao total até agora
         fi
     done
     for k in "${dirs[@]}"; do
         temp_var=$total_var
+        #echo $temp_var
         total_var=0
         espaco "$k"
-        total_var=$(( $temp_var + $total_var ))
+        if [[ $total_var -ge 0 ]];then
+            total_var=$(( $temp_var + $total_var ))
+        else
+            total_var=$temp_var
+        fi
     done
     dict["$dir"]=$total_var
 }
 
 function printer(){
-    for i in "${!dict[@]}"; do
-        if [[ "${dict["$i"]}" == "" ]]; then
-            dict["$i"]=NA
-        fi
-    done
+    counter=1
 
     if [[ $flag_r -eq 0 ]] && [[ $flag_a -eq 0 ]]; then
         for key in "${!dict[@]}"; do
             printf "%s %s\n" "${dict["$key"]}" "$key"
         done | sort -k1,1nr | while read -r line; do
+            if [[ $counter -gt $flag_l ]] && [[ $flag_l -ne 0 ]]; then
+                exit 0
+            fi
             space=$(echo "$line" | awk '{print $1}')
+            if [[ $space == -1 ]]; then
+                space="NA"
+            fi
             dir=$(echo "$line" | cut -d" " -f2-)
             printf "%s %s\n" "$space" "$dir"
+            counter=$(( $counter + 1 ))
         done #ordena a dict por ordem decrescente de tamanho e guarda os nomes dos diretórios ordenados
     fi
 
@@ -127,9 +144,13 @@ function printer(){
         for key in "${!dict[@]}"; do
             printf "%s %s\n" "${dict["$key"]}" "$key"
         done | sort -k1,1n | while read -r line; do
+            if [[ $counter -gt $flag_l ]] && [[ $flag_l -ne 0 ]]; then
+                exit 0
+            fi
             space=$(echo "$line" | awk '{print $1}')
             dir=$(echo "$line" | cut -d" " -f2-)
             printf "%s %s\n" "$space" "$dir"
+            counter=$(( $counter + 1 ))
         done #ordena a dict por ordem crescente de tamanho e guarda os nomes dos diretórios ordenados
     fi
 
@@ -137,9 +158,13 @@ function printer(){
         for key in "${!dict[@]}"; do
             printf "%s %s\n" "${dict["$key"]}" "$key"
         done | sort -k2,2 | while read -r line; do
+            if [[ $counter -gt $flag_l ]] && [[ $flag_l -ne 0 ]]; then
+                exit 0
+            fi
             space=$(echo "$line" | awk '{print $1}')
             dir=$(echo "$line" | cut -d" " -f2-)
             printf "%s %s\n" "$space" "$dir"
+            counter=$(( $counter + 1 ))
         done #ordena a dict por ordem alfabetica e guarda os nomes dos diretórios ordenados
     fi
 
@@ -147,9 +172,13 @@ function printer(){
         for key in "${!dict[@]}"; do
             printf "%s %s\n" "${dict["$key"]}" "$key"
         done | sort -k2,2r | while read -r line; do
+            if [[ $counter -gt $flag_l ]] && [[ $flag_l -ne 0 ]]; then
+                exit 0
+            fi
             space=$(echo "$line" | awk '{print $1}')
             dir=$(echo "$line" | cut -d" " -f2-)
             printf "%s %s\n" "$space" "$dir"
+            counter=$(( $counter + 1 ))
         done #ordena a dict por ordem alfabetica reversa e guarda os nomes dos diretórios ordenados
     fi
 }
@@ -157,10 +186,12 @@ function printer(){
 
 #MAIN
 declare -A dict
-
+maindir=$(pwd)
+counting=0
 
 for l in "$@"; do
     if [[ -d "$l" ]]; then
+        l=$(realpath --relative-to="$maindir" "$l")
         total_var=0
 	    espaco "$l"
     fi
