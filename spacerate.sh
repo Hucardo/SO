@@ -26,9 +26,7 @@ while getopts "ar" opt; do
 done
 
 r="r"
-if [[ $flag_a == "1,1n" && $flag_r == 1 ]]; then
-    r=""
-elif [[ $flag_a == "2,1000" && $flag_r == 0 ]]; then
+if [[ $flag_a == "1,1n" && $flag_r == 1 ]] || [[ $flag_a == "2,1000" && $flag_r == 0 ]]; then
     r=""
 fi
 

@@ -63,9 +63,7 @@ if [[ -z "$flag_d" ]] || [[ -z "$flag_n" ]] || [[ -z "$flag_s" ]] || [[ -z "$fla
 fi
 
 r="r"
-if [[ $flag_a == "1,1n" && $flag_r == 1 ]]; then
-    r=""
-elif [[ $flag_a == "2,1000" && $flag_r == 0 ]]; then
+if [[ $flag_a == "1,1n" && $flag_r == 1 ]] || [[ $flag_a == "2,1000" && $flag_r == 0 ]]; then
     r=""
 fi
 
