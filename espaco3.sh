@@ -82,7 +82,7 @@ function ordenador(){
     #
     #
     ordered=($(for i in "${!dict[@]}"; do
-        done | sort -k2,2nr | cut -d' ' -f1))
+        done | sort -k1,1nr | cut -d' ' -f1))
 
     reversed=($(for i in "${!dict[@]}"; do
         done | sort -k2,2n | cut -d' ' -f1))

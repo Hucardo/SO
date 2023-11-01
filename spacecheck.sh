@@ -40,28 +40,25 @@ while getopts "d:n:ras:l:" opt; do
         s)
             flag_s="$OPTARG" #>=flag_s kbs
             if [[ ! $flag_s =~ ^[0-9]+$ ]]; then
-                echo "-s requere um número."
+                echo "-s requer um número."
                 exit 1
             fi
             ;;
         l)
             flag_l="$OPTARG" #Com limite de linhas flag_l
             if [[ ! $flag_l =~ ^[0-9]+$ ]]; then
-                echo "-l requere um número."
+                echo "-l requer um número."
                 exit 1
             fi
             ;;
         \?)
-            echo "Invalid option: -$OPTARG"
-            ;;
-        :)
-            echo "Option -$OPTARG requires an argument."
+            echo "A flag -$OPTARG é inválida (flags válidas são -d, -n, -r, -a, -s e -l)"
             ;;
     esac
 done
 
 if [[ -z "$flag_d" ]] || [[ -z "$flag_n" ]] || [[ -z "$flag_s" ]] || [[ -z "$flag_l" ]]; then
-    echo "Required options are missing or have no arguments."
+    echo "Alguns argumentos para as flags -d, -n, -s ou -l são inexistentes ou inválidos."
     exit 1
 fi
 
@@ -75,7 +72,6 @@ fi
 function espaco() {
     local temp_var=0
     local dir="$1"
-    counting=$(( $counting + 1 ))
     local space=0
     if [[ ! -d "$dir" ]]; then #se não for um diretório
         echo "Erro: Diretório inválido"
@@ -103,7 +99,7 @@ function espaco() {
     for j in "${files[@]}"; do #itera sobre a dict de ficheiros encontrados
         space=$(du "$j" 2>/dev/null| awk '{print $1}' | grep -oE '[0-9.]+') #encontra o tamanho do ficheiro usando du
         if [[ $space -ge $flag_s ]] ; then #verifica se o tamanho do ficheiro encontra os requisitos de tamanho
-            total_var=$(echo "$total_var + $space" | bc) #soma o espaço do ficheiro analisado ao total até agora
+            total_var=$(( $total_var + $space )) #soma o espaço do ficheiro analisado ao total até agora
         fi
     done
     for k in "${dirs[@]}"; do
