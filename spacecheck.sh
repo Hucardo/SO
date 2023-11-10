@@ -15,7 +15,7 @@ flag_r=0 #Ordem decrescente
 flag_a="1,1n" #Sem ordenação por nome
 flag_l=0 #Sem limite de linhas
 
-while getopts "d:n:ras:l:" opt; do
+while getopts "d:n:ras:l:" opt 2>/dev/null; do
     case $opt in
         d)
             flag_d=$(date -d "$OPTARG" +%s 2>/dev/null) #Data especificada (No formato M d HH:MM)
@@ -52,7 +52,8 @@ while getopts "d:n:ras:l:" opt; do
             fi
             ;;
         \?)
-            echo "A flag -$OPTARG é inválida (flags válidas são -d, -n, -r, -a, -s e -l)"
+            echo "A flag '-$OPTARG' é inválida (flags válidas são -d, -n, -r, -a, -s e -l)"
+            exit 1
             ;;
     esac
 done
@@ -82,8 +83,8 @@ function espaco() {
     done < <(find "$dir" -mindepth 1 -maxdepth 1 -type d ! -name "*.*" -print0 2>/dev/null)
 
     files=()
-    find "$dir" -maxdepth 1 -type f -name "$flag_n" ! -newermt "@$flag_d" -print0 2>/dev/null > discard.txt
-    if [[ $? -eq 1 ]]; then
+    find "$dir" -maxdepth 1 -type f -name "$flag_n" ! -newermt "@$flag_d" -print0 > /dev/null 2>&1
+    if [[ $? -ne 0 ]]; then
         dict["$dir"]=-1
         return 1
     fi
@@ -95,7 +96,7 @@ function espaco() {
 
     #encontra os ficheiros em $dir com o nome a corresponder a $flag_n alterados não depois de $Flag_d
     for j in "${files[@]}"; do #itera sobre a dict de ficheiros encontrados
-        space=$(du "$j" 2>/dev/null| awk '{print $1}' | grep -oE '[0-9.]+') #encontra o tamanho do ficheiro usando du
+        space=$(du -b "$j" 2>/dev/null| awk '{print $1}' | grep -oE '[0-9.]+') #encontra o tamanho do ficheiro usando du
         if [[ $space -ge $flag_s ]] ; then #verifica se o tamanho do ficheiro encontra os requisitos de tamanho
             total_var=$(( $total_var + $space )) #soma o espaço do ficheiro analisado ao total até agora
         fi
@@ -144,7 +145,6 @@ for l in "$@"; do
 	    espaco "$l"
     fi
 done
-rm discard.txt
 
 if [[ "${#dict[@]}" == 0 ]]; then
     echo "Nenhum diretório inserido."

@@ -10,7 +10,7 @@ flag_r=0
 input_novo=""
 input_antigo=""
 
-while getopts "ar" opt; do
+while getopts "ar" opt 2>/dev/null; do
     case $opt in
         a)
             flag_a="2,1000"
@@ -19,7 +19,7 @@ while getopts "ar" opt; do
             flag_r=1
             ;;
         \?)
-            echo "Invalid option: -$OPTARG" >&2
+            echo "Invalid option!" >&2
             exit 1
             ;;
     esac
