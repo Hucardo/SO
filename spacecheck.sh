@@ -1,6 +1,5 @@
 #!/bin/bash
 
-IFS=$'\n'
 
 if (( $# == 0 )); then
     echo "Erro: Nenhum argumento especificado"
@@ -77,8 +76,9 @@ function espaco() {
         return 1
     fi
 
+
     dirs=()
-    while IFS= read -r -d '' directory; do
+    while read -r -d '' directory; do
         dirs+=("$directory")
     done < <(find "$dir" -mindepth 1 -maxdepth 1 -type d ! -name "*.*" -print0 2>/dev/null)
 
@@ -89,9 +89,13 @@ function espaco() {
         return 1
     fi
 
-    while IFS= read -r -d '' file; do
+    while read -r -d '' file; do
         files+=("$file")
     done < <(find "$dir" -maxdepth 1 -type f -name "$flag_n" ! -newermt "@$flag_d" -print0 )
+
+    while read -r -d '' file; do
+        files+=("$file")
+    done < <(find "$dir" -maxdepth 1 -type f -name "$flag_n" ! -newermt "@$flag_d" -print0 )   
 
 
     #encontra os ficheiros em $dir com o nome a corresponder a $flag_n alterados não depois de $Flag_d
@@ -103,7 +107,6 @@ function espaco() {
     done
     for k in "${dirs[@]}"; do
         temp_var=$total_var
-        #echo $temp_var
         total_var=0
         espaco "$k"
         if [[ $total_var -ge 0 ]];then
@@ -153,4 +156,3 @@ fi
 
 echo "SIZE NAME $(date +%Y%m%d) $@"
 printer
-unset IFS

@@ -111,7 +111,7 @@ done
 
 for key in "${!dictantigo[@]}"; do #percorre a dict do diretório antigo
     if [[ ! ${dictnovo["$key"]} ]]; then #se o diretório foi removido
-        dictfinal["$key REMOVED"]=$(( 0 - ${dictantigo["$key"]})) #guarda o simétrico do tamanho do diretório antigo
+        dictfinal["$key REMOVED"]="-${dictantigo["$key"]}" #guarda o simétrico do tamanho do diretório antigo
     fi
 done
 

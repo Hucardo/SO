@@ -75,6 +75,9 @@ while IFS= read -r line; do
     fi
 
     size=$(echo "$line" | cut -d' ' -f1)
+    if [[ $size == "NA" ]]; then
+        size=0
+    fi
     name=$(echo "$line" | cut -d' ' -f2-)
 
     dictantigo["$name"]=$size
@@ -89,6 +92,9 @@ while IFS= read -r line; do
     fi
 
     size=$(echo "$line" | cut -d' ' -f1)
+    if [[ $size == "NA" ]]; then
+        size=0
+    fi
     name=$(echo "$line" | cut -d' ' -f2-)
 
     dictnovo["$name"]=$size
