@@ -5,3 +5,4 @@ SIZE NAME 20231031 teste01
 8 teste01/Sub01/SubSub01
 4 teste01/a
 4 teste01/b
+NA hugo

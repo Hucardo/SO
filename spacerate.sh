@@ -26,7 +26,7 @@ while getopts "ar" opt 2>/dev/null; do
 done
 
 r="r"
-if [[ $flag_a == "1,1n" && $flag_r == 1 ]] || [[ $flag_a == "2,1000" && $flag_r == 0 ]]; then
+if [[ $flag_a == "1,1n" && $flag_r == 1 ]] || [[ $flag_a == "2,1000" && $flag_r == 0 ]]; then 
     r=""
 fi
 
@@ -76,10 +76,10 @@ do
     continue  
   fi
 
-  size=$(echo "$line" | cut -d\  -f1)
+  size=$(echo "$line" | cut -d\  -f1) #separa o tamanho do nome do diretório
   name=$(echo "$line" | cut -d\  -f2-)
 
-  dictantigo["$name"]=$size
+  dictantigo["$name"]=$size #guarda o tamanho e o nome do diretório numa dict
 
 done < "$input_antigo"
 
@@ -92,34 +92,34 @@ do
     continue  
   fi
 
-  size=$(echo "$line" | cut -d\  -f1)
+  size=$(echo "$line" | cut -d\  -f1) #separa o tamanho do nome do diretório
   name=$(echo "$line" | cut -d\  -f2-)
 
-  dictnovo["$name"]=$size
+  dictnovo["$name"]=$size #guarda o tamanho e o nome do diretório numa dict
 
 done < "$input_novo"
 
-for key in "${!dictnovo[@]}"; do
+for key in "${!dictnovo[@]}"; do #percorre a dict do diretório novo
     
-    if [[ ${dictantigo["$key"]} ]]; then
-        dictfinal["$key"]=$(( ${dictnovo["$key"]} - ${dictantigo["$key"]} ))
+    if [[ ${dictantigo["$key"]} ]]; then #se o diretório já existia no diretório antigo
+        dictfinal["$key"]=$(( ${dictnovo["$key"]} - ${dictantigo["$key"]} )) #guarda a diferença de tamanho entre o diretório antigo e o novo
     
-    else
-        dictfinal["$key NEW"]=${dictnovo["$key"]}
+    else #se o diretório é novo
+        dictfinal["$key NEW"]=${dictnovo["$key"]} #guarda o tamanho do diretório novo
     fi
 done
 
-for key in "${!dictantigo[@]}"; do
-    if [[ ! ${dictnovo["$key"]} ]]; then
-        dictfinal["$key REMOVED"]=$(( 0 - ${dictantigo["$key"]}))
+for key in "${!dictantigo[@]}"; do #percorre a dict do diretório antigo
+    if [[ ! ${dictnovo["$key"]} ]]; then #se o diretório foi removido
+        dictfinal["$key REMOVED"]=$(( 0 - ${dictantigo["$key"]})) #guarda o simétrico do tamanho do diretório antigo
     fi
 done
 
 echo "SIZE NAME"
-for key in "${!dictfinal[@]}"; do
-    printf "%s %s\n" "${dictfinal["$key"]}" "$key"
-done | sort -k"$flag_a$r" | while read -r line; do
-    space=$(echo "$line" | awk '{print $1}')
-    dir=$(echo "$line" | cut -d" " -f2-)
-    printf "%s %s\n" "$space" "$dir"
+for key in "${!dictfinal[@]}"; do #percorre a dict final
+    printf "%s %s\n" "${dictfinal["$key"]}" "$key" #imprime o tamanho e o nome do diretório
+done | sort -k"$flag_a$r" | while read -r line; do #
+    space=$(echo "$line" | awk '{print $1}') #
+    dir=$(echo "$line" | cut -d" " -f2-) #
+    printf "%s %s\n" "$space" "$dir" #
 done #ordena a dict por ordem decrescente de tamanho e guarda os nomes dos diretórios ordenados
