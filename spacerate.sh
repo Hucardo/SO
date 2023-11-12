@@ -30,10 +30,6 @@ if [[ $flag_a == "1,1n" && $flag_r == 1 ]] || [[ $flag_a == "2,1000" && $flag_r 
     r=""
 fi
 
-if [[ $# < 2 ]] || [[ $# > 4 ]]; then
-    echo "Usage: $0 [-a] [-r] <input_novo> <input_antigo>"
-    exit 1
-fi
 
 
 for arg in "$@"; do
@@ -42,18 +38,13 @@ for arg in "$@"; do
             input_novo="$arg"
         elif [ -z "$input_antigo" ]; then
             input_antigo="$arg"
-            break  # We found both files, so we can exit the loop
+            break  # Encontrámos ambos os ficheiros nos argumentos
         fi
     fi
 done
 
-if [ ! -f $input_antigo ]; then
-    echo "File $input_antigo nao existe."
-    exit 1
-fi
-
-if [ ! -f $input_novo ]; then
-    echo "File $input_novo nao existe."
+if [[ -z "$input_novo" ]] || [[ -z "$input_antigo" ]]; then
+    echo "Usage: $0 [-a] [-r] <input_novo> <input_antigo>"
     exit 1
 fi
 
@@ -69,7 +60,7 @@ fi
 
 first_line=true
 
-while IFS= read -r line
+while read -r line
 do
   if [ "$first_line" = true ]; then
     first_line=false
@@ -85,7 +76,7 @@ done < "$input_antigo"
 
 first_line=true
 
-while IFS= read -r line
+while read -r line 
 do
   if [ "$first_line" = true ]; then
     first_line=false
@@ -100,9 +91,12 @@ do
 done < "$input_novo"
 
 for key in "${!dictnovo[@]}"; do #percorre a dict do diretório novo
-    
     if [[ ${dictantigo["$key"]} ]]; then #se o diretório já existia no diretório antigo
-        dictfinal["$key"]=$(( ${dictnovo["$key"]} - ${dictantigo["$key"]} )) #guarda a diferença de tamanho entre o diretório antigo e o novo
+        if [[ ${dictnovo["$key"]} == "NA" || ${dictantigo["$key"]} == "NA" ]]; then
+            dictfinal["$key"]="NA"
+        else
+            dictfinal["$key"]=$(( ${dictnovo["$key"]} - ${dictantigo["$key"]} )) #guarda a diferença de tamanho entre o diretório antigo e o novo
+        fi
     
     else #se o diretório é novo
         dictfinal["$key NEW"]=${dictnovo["$key"]} #guarda o tamanho do diretório novo
@@ -111,7 +105,11 @@ done
 
 for key in "${!dictantigo[@]}"; do #percorre a dict do diretório antigo
     if [[ ! ${dictnovo["$key"]} ]]; then #se o diretório foi removido
-        dictfinal["$key REMOVED"]="-${dictantigo["$key"]}" #guarda o simétrico do tamanho do diretório antigo
+        if [[ ${dictantigo["$key"]} == "NA" ]]; then
+            dictfinal["$key REMOVED"]="${dictantigo["$key"]}" #guarda o simétrico do tamanho do diretório antigo
+        else
+            dictfinal["$key REMOVED"]="-${dictantigo["$key"]}"
+        fi
     fi
 done
 

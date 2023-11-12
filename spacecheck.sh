@@ -79,28 +79,32 @@ function espaco() {
 
     dirs=()
     while read -r -d '' directory; do
-        dirs+=("$directory")
+        if [[ $? -ne 0 ]]; then
+            dict["$directory"]=-1
+            return 1
+        else
+            dirs+=("$directory")
+        fi
     done < <(find "$dir" -mindepth 1 -maxdepth 1 -type d ! -name "*.*" -print0 2>/dev/null)
 
     files=()
-    find "$dir" -maxdepth 1 -type f -name "$flag_n" ! -newermt "@$flag_d" -print0 > /dev/null 2>&1
-    if [[ $? -ne 0 ]]; then
-        dict["$dir"]=-1
-        return 1
-    fi
-
     while read -r -d '' file; do
+        if [[ $? -ne 0 ]]; then
+            dict["$dir"]=-1
+            return 1
+        fi
         files+=("$file")
-    done < <(find "$dir" -maxdepth 1 -type f -name "$flag_n" ! -newermt "@$flag_d" -print0 )
-
-    while read -r -d '' file; do
-        files+=("$file")
-    done < <(find "$dir" -maxdepth 1 -type f -name "$flag_n" ! -newermt "@$flag_d" -print0 )   
+    done < <(find "$dir" -maxdepth 1 -type f -name "$flag_n" ! -newermt "@$flag_d" -print0 2>/dev/null)
+ 
 
 
     #encontra os ficheiros em $dir com o nome a corresponder a $flag_n alterados não depois de $Flag_d
     for j in "${files[@]}"; do #itera sobre a dict de ficheiros encontrados
         space=$(du -b "$j" 2>/dev/null| awk '{print $1}' | grep -oE '[0-9.]+') #encontra o tamanho do ficheiro usando du
+        if [[ -z $space ]]; then
+            dict["$dir"]=-1
+            return 1
+        fi
         if [[ $space -ge $flag_s ]] ; then #verifica se o tamanho do ficheiro encontra os requisitos de tamanho
             total_var=$(( $total_var + $space )) #soma o espaço do ficheiro analisado ao total até agora
         fi
@@ -109,13 +113,13 @@ function espaco() {
         temp_var=$total_var
         total_var=0
         espaco "$k"
-        if [[ $total_var -ge 0 ]];then
-            total_var=$(( $temp_var + $total_var ))
-        else
-            total_var=$temp_var
+        if [[ $? -ne 0 ]];then
+            total_var=0
         fi
+        total_var=$(( $temp_var + $total_var ))
     done
     dict["$dir"]=$total_var
+    return 0
 }
 
 function printer(){
